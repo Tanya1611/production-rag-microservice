@@ -1,0 +1,6 @@
+# Ignore the environment variables file (sensitive data)
+.env
+
+# Ignore external dependencies folders
+env/
+venv/
