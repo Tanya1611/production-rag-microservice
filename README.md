@@ -1,12 +1,10 @@
-<div text-align: center>
 # RAG Q&A System
-RAG microservice with FastAPI & LangChain for enterprise QA. 
-  
-</div>
 
-A RAG (Retrieval-Augmented Generation) system that enables intelligent Q&A over provided documents.
+A **RAG (Retrieval-Augmented Generation)** system that enables intelligent Q&A over provided documents with FastAPI & LangChain.
 
-# Overview
+---
+
+## Overview
 
 This project explores how RAG can be used to:
 
@@ -17,7 +15,9 @@ This project explores how RAG can be used to:
 5. Retrieve relevant information
 6. Generate answers using an LLM
 
-# Tech Stack
+---
+
+## Tech Stack
 
 - Python
 - LangChain
@@ -25,25 +25,52 @@ This project explores how RAG can be used to:
 - Vector Database
 - FastAPI
 
-# Basic Workflow
+---
 
-Document
-   ↓
-Text Splitting
-   ↓
-Embeddings
-   ↓
-Vector Store
-   ↓
-Similarity Search
-   ↓
-Relevant Context
-   ↓
-  LLM
-   ↓
- Answer
+## Basic Workflow
 
-# Current Status
+                ┌───────────────┐
+                │    Document   │
+                └───────┬───────┘
+                        │
+                        ▼
+                ┌────────────────┐
+                │ Text Splitting │
+                └───────┬────────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │   Embeddings  │
+                └───────┬───────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │  Vector Store │
+                └───────┬───────┘
+                        │
+                        ▼
+              ┌───────────────────┐
+              │ Similarity Search │
+              └─────────┬─────────┘
+                        │
+                        ▼
+               ┌──────────────────┐
+               │ Relevant Context │
+               └────────┬─────────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │      LLM      │
+                └───────┬───────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │    Response   │
+                └───────────────┘
+
+---
+
+## Current Status
 
 This is the initial version of the project.
 
