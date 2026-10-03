@@ -86,3 +86,33 @@ class DocumentProcessor():
         return loaders[extension_of_file](file_path)
 
     
+    def split_documents(self, documents:list[Document])-> list[Document]:
+        """Split the documents into chunks.
+        
+        Args:
+            documents: List of document objects.
+
+        Returns:
+            List of chunked Document objects.
+
+        """
+
+        logger.info(f"Splitting {len(documents)} documents into chunks")
+
+        chunks = self.text_splitter.split_documents(documents)
+
+        logger.info(f"Created {len(chunks)} chunks")
+        return chunks
+
+    def process_file(self, file_path: str | Path) -> list[Document]:
+        """Load and split a file in one step.
+
+        Args:
+            file_path: Path to file
+
+        Returns:
+            List of chunked Document objects
+        """
+        
+        documents = self.load_file(file_path)
+        return self.split_documents(documents)
