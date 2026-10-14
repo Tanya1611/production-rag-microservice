@@ -36,7 +36,7 @@ class DocumentInfo(BaseModel):
     # Document Information
 
     source: str = Field(description="Document source/filename")
-    meatdata: dict[str, Any] = Field(
+    metadata: dict[str, Any] = Field(
         default_factory=dict,
         description="Document metadata"
     )
