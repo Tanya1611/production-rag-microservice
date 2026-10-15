@@ -48,6 +48,39 @@ class DocumentListResponse(BaseModel):
     total_documents: int = Field(description="Total document count")
     status: str = Field(description="Collection status")
 
+#-------------Query Schemas-----------------
+
+class QueryRequest(BaseModel):
+    # Request for RAG query
+
+    question : str = Field(min_length=1, max_length=1000)
+    include_sources : bool = Field(description="Include source documents in response")
+
+    model_config = {
+        "json_schema_extra":{
+            "examples": [
+                {
+                    "question":"What is RAG?",
+                    "incluse_sources":True
+                }
+            ]
+        }
+    }
+
+class SourceDocument(BaseModel):
+    # Source document information
+
+    content : str = Field(description="Document content expected")
+    metadata : dict[str, Any] = Field(description="Document metadata")
+
+class QueryResponse(BaseModel):
+    # Response for RAG Query
+
+    question : str = Field(description="Original question")
+    answer : str = Field(description="Generated answer")
+    sources : list[SourceDocument] | None = Field(None, description="Source Document used")
+    processing_time_ms : float = Field(description="Query processing time in milliseconds")
+
 
 #-------------Error Schemas-----------------
 

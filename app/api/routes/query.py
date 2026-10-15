@@ -1,0 +1,121 @@
+"""Query endpoints for RAG Q&A"""
+
+import time
+
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
+
+from app.api.schemas import QueryRequest, QueryResponse, SourceDocument
+from app.core.rag_chain import RAGChain
+from app.utils.logger import get_logger
+
+logger = get_logger()
+router = APIRouter(prefix="/query", tags=["Query"])
+
+@router.post("", response_model=QueryResponse, summary="Ask a quesstion", description="Submit a question and get an AI generated answer based on the ingested document")
+async def query(request: QueryRequest) -> QueryResponse:
+    """Process a RAG query"""
+
+    logger.info(f"Query received: {request.question[:100]}, sources: {request.include_sources}")
+    start_time = time.time()
+
+    try:
+        rag_chain = RAGChain()
+
+        # Determine which method to call based on request
+        if request.include_sources:
+            result = await rag_chain.query_with_sources(request.question)
+            sources = [
+                SourceDocument(
+                    content=source.content,
+                    metadata=source.metadata
+                )
+                for source in result["sources"]
+            ]
+            answer = result.answer
+
+        else:
+            answer = await rag_chain.query(request.question)
+            sources = None
+
+        processing_time = (time.time() - start_time) * 1000
+
+        logger.info(f"Query processed in {processing_time}ms")
+
+        return QueryResponse(
+            question = request.question,
+            answer = answer,
+            sources = sources,
+            processing_time_ms = processing_time
+        )
+
+    except Exception as e:
+        logger.error(f"Error processing query: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing query: {str(e)}"
+        )
+
+
+@router.post("/stream", summary="Ask a question (streaming)", description="Submit a question and get a streaming AI-generated answer")
+async def query_stream(request: QueryRequest) -> StreamingResponse:
+    """Process a RAG query with streaming response"""
+    logger.info(f"Streaming query received: {request.question[:100]}...")
+
+    try:
+        rag_chain = RAGChain()
+
+        async def generated():
+            # Generate streaming response
+            try:
+                for chunk in rag_chain.stream(request.question):
+                    yield chunk
+            except Exception as e:
+                logger.error(f"Error in stream: {e}")
+                yield f"\n\nError: {str(e)}"
+
+        return StreamingResponse(
+            generated(),
+            media_type="text/plain"
+        )
+
+    except Exception as e:
+        logger.error(f"Error setting up stream: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error processing query: {str(e)}"
+        )
+
+@router.post("/search", summary="Search documents", description="Search for relevant documents without generating an answer.")
+async def search_documents(request: QueryRequest) -> dict:
+    """Search for relevant documents."""
+    logger.info(f"Search received: {request.question[:100]}...")
+
+    try:
+        from app.core.vector_store import VectorStoreService
+
+        vector_store = VectorStoreService()
+        results = vector_store.search_with_scores(request.question)
+
+        documents = [
+            {
+                "content": doc.page_content,
+                "metadata": doc.metadata,
+                "relevance_score": round(score, 4),
+            }
+            for doc, score in results
+        ]
+
+        return {
+            "query": request.question,
+            "results": documents,
+            "count": len(documents),
+        }
+
+    except Exception as e:
+        logger.error(f"Error searching documents: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error searching documents: {str(e)}",
+        )
+    
