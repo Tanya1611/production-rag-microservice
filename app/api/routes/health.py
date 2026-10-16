@@ -11,9 +11,9 @@ from app.core.vector_store import VectorStoreService
 
 logger = get_logger(__name__)
 
-route = APIRouter(prefix="/health", tags=["Health"])
+router = APIRouter(prefix="/health", tags=["Health"])
 
-@route.get("", response_model=HealthResponse, summary="Basic Health Check", description="Returns basic health status of the service")
+@router.get("", response_model=HealthResponse, summary="Basic Health Check", description="Returns basic health status of the service")
 async def health_check() -> HealthResponse:
     # Basic health check endpoint.
     logger.debug("HEalth check requested")
@@ -24,7 +24,7 @@ async def health_check() -> HealthResponse:
     )
 
 
-@route.get(
+@router.get(
     "/ready", 
     response_model=ReadinessResponse, 
     summary="Readiness check", 
