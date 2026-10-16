@@ -9,7 +9,7 @@ from app.api.schemas import QueryRequest, QueryResponse, SourceDocument
 from app.core.rag_chain import RAGChain
 from app.utils.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(__name__)
 router = APIRouter(prefix="/query", tags=["Query"])
 
 @router.post("", response_model=QueryResponse, summary="Ask a quesstion", description="Submit a question and get an AI generated answer based on the ingested document")
