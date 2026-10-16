@@ -32,7 +32,7 @@ def get_qdrant_client() -> QdrantClient:
         api_key=settings.qdrant_api_key
     )
 
-    logger.info("Qdrant lient connected successfully.")
+    logger.info("Qdrant client connected successfully.")
     return client
 
 
@@ -46,7 +46,7 @@ class VectorStoreService:
             collection_name: Name of the Qdrant collection 
         """
 
-        self.collection_name = collection_name or settings.colllection_name
+        self.collection_name = collection_name or settings.collection_name
         self.client = get_qdrant_client()
         self.embeddings = get_embeddings()
 

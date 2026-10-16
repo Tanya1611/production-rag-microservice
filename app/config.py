@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     qdrant_api_key : str
 
     # Collection Settings
-    colllection_name : str = "rag_documents"
+    collection_name : str = "rag_documents"
 
     # Document Processing Settings
     chunk_size : int = 1000
