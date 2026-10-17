@@ -6,14 +6,14 @@ load_dotenv()
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, UploadFile, File
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app import __version__
 from app.api.routes import document, health, query
 from app.config import get_settings
 from app.utils.logger import get_logger, setup_logger
-from app.core.document_processor import DocumentProcessor
 
 settings = get_settings()
 
@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     # Startup
     setup_logger(settings.log_level)
     logger = get_logger(__name__)
-    logger.info(f"Starting RAG Q&A v{__version__}")
+    logger.info(f"Starting {settings.app_name} v{__version__}")
     logger.info(f"Log level: {settings.log_level}")
 
     yield
@@ -35,6 +35,7 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI application
 app = FastAPI(
+    title=settings.app_name,
     description="""
 ## RAG Q&A System API
 
@@ -57,21 +58,31 @@ A Retrieval-Augmented Generation (RAG) question-answering system built with:
     lifespan=lifespan,
 )
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
+
+
+@app.get("/", tags=["Root"])
+async def root():
+    """Root endpoint."""
+    return {
+        "message": f"Welcome to {settings.app_name}",
+        "version": __version__,
+        "docs": "/docs"
+    }
+
 
 # Include routers
 app.include_router(health.router)
 app.include_router(document.router)
 app.include_router(query.router)
 
-
-@app.post("/upload-document/")
-async def upload_document(file: UploadFile = File()):
-    processor = DocumentProcessor()
-    result_message = processor.process_upload(file=file.file, filename=file.filename)
-
-    return{
-        "status": "Success"   
-        }
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -93,5 +104,7 @@ if __name__ == "__main__":
 
     uvicorn.run(
         "app.main:app",
+        host=settings.api_host,
+        port=settings.api_port,
         reload=True,
     )
