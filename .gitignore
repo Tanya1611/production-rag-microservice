@@ -4,3 +4,6 @@
 # Ignore external dependencies folders
 env/
 venv/
+
+# Python-generated files
+__pycache__/

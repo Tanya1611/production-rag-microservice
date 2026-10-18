@@ -1,6 +1,7 @@
 # Core Framework
 fastapi
 uvicorn[standard]
+python-multipart
 
 # LangChain & AI
 langchain
