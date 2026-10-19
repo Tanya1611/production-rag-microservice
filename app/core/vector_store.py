@@ -103,7 +103,7 @@ class VectorStoreService:
         ids = [str(uuid4()) for _ in documents]
 
         # Add to vector store
-        self.vector_store.add_documents(documents, ids)
+        self.vector_store.add_documents(documents, ids=ids)
 
         logger.info(f"Successfully added {len(documents)} documents.")
         return ids
