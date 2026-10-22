@@ -39,6 +39,20 @@ class Settings(BaseSettings):
     # Logging Level
     log_level : str = "INFO"
 
+    # RAGAS Evaluation Settings
+    enable_ragas_evaluation: bool = True
+    ragas_timeout_seconds: float = 30.0
+    ragas_log_results: bool = True
+    ragas_llm_model: str | None = None 
+    ragas_llm_temperature: str | None = None 
+
+    # API Settings
+    api_host: str = "0.0.0.0"
+    api_port: int = 8000
+
+    # Application Info
+    app_name: str = "RAG Q&A System"
+    app_version: str = "0.1.0"
 
 def get_settings() -> Settings:
 
