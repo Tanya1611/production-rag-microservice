@@ -74,7 +74,7 @@ async def get_collection_info() -> DocumentListResponse:
         return DocumentInfo(
             source=info["name"],
             metadata={
-                "total_documents":info["points_count"],
+                "total_documents":info["point_count"],
                 "status":info["status"]
             }
         )
