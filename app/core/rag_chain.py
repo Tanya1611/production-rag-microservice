@@ -47,6 +47,9 @@ class RAGChain:
         self.vector_store = vector_store_service or VectorStoreService()
         self.retriever = self.vector_store.get_retriever()
 
+        # Initialize evaluator
+        self._evaluator = None
+
         # Initialize LLM
         self.llm = ChatOpenAI(
             model=settings.llm_model,
@@ -69,6 +72,17 @@ class RAGChain:
         )
 
         logger.info(f"RAGChain initialized with model={settings.llm_model}, retrieval_k={settings.retrieval_k}.")
+
+    @property
+    def evaluator(self):
+        """Get or create RAGAS evaluator instance."""
+
+        if self._evaluator is None:
+            from app.core.ragas_evaluator import RAGASEvaluator
+
+            self._evaluator = RAGASEvaluator()
+
+        return self._evaluator
 
     async def query(self, question:str) -> str:
         """Execute async RAG query.
@@ -125,6 +139,54 @@ class RAGChain:
         except Exception as e:
             logger.error(f"Error processing async query with sources: {e}")
             raise
+
+    async def query_with_evaluation(self, question:str, inclusde_sources:bool=True)->dict:
+        """Execute async RAG query with RAGAS evaluation.
+        
+        Args:
+            question: User question
+            include_sources: Whether to include sources in response
+
+        Returns:
+            Dictionary with answer, sources and evaluation scores
+        
+        """
+
+        logger.info(f"Processing query with evaluation: {question[:70]}...")
+
+        try:
+            # Get answer and sources
+            result = await self.query_with_sources(question)
+            answer = result["answer"]
+            sources = result["sources"]
+
+         # Prepare contexts for evaluation
+            contexts = [source["content"] for source in sources]
+
+            # Run evaluation with error handling
+            try:
+                evaluation = await self.evaluator.aevaluate(
+                    question=question, answer=answer, contexts=contexts
+                )
+                logger.info(
+                    f"Evaluation completed - "
+                    f"faithfulness={evaluation.get('faithfulness', 'N/A')}, "
+                    f"answer_relevancy={evaluation.get('answer_relevancy', 'N/A')}"
+                )
+            except Exception as e:
+                logger.warning(f"Evaluation failed: {e}", exc_info=True)
+                evaluation = {
+                    "faithfulness": None,
+                    "answer_relevancy": None,
+                    "evaluation_time_ms": None,
+                    "error": str(e),
+                }
+
+            return {"answer": answer, "sources": sources, "evaluation": evaluation}
+
+        except Exception as e:
+            logger.error(f"Error in query with evaluation: {e}")
+            raise    
 
     async def stream(self, question:str):
         """Stram RAG Response
