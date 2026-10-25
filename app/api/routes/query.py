@@ -27,12 +27,12 @@ async def query(request: QueryRequest) -> QueryResponse:
             result = await rag_chain.query_with_sources(request.question)
             sources = [
                 SourceDocument(
-                    content=source.content,
-                    metadata=source.metadata
+                    content=source["content"],
+                    metadata=source["metadata"]
                 )
                 for source in result["sources"]
             ]
-            answer = result.answer
+            answer = result["answer"]
 
         else:
             answer = await rag_chain.query(request.question)
