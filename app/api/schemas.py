@@ -61,7 +61,7 @@ class QueryRequest(BaseModel):
             "examples": [
                 {
                     "question":"What is RAG?",
-                    "incluse_sources":True
+                    "include_sources":True
                 }
             ]
         }
