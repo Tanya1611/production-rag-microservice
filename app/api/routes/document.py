@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
-from app.api.schemas import DocumentListResponse, DocumentUploadResponse, DocumentInfo
+from app.api.schemas import DocumentListResponse, DocumentUploadResponse
 from app.core.document_processor import DocumentProcessor
 from app.core.vector_store import VectorStoreService
 from app.utils.logger import get_logger
@@ -71,12 +71,10 @@ async def get_collection_info() -> DocumentListResponse:
         vector_store = VectorStoreService()
         info = vector_store.get_collection_info()
 
-        return DocumentInfo(
-            source=info["name"],
-            metadata={
-                "total_documents":info["point_count"],
-                "status":info["status"]
-            }
+        return DocumentListResponse(
+            collection_name=info["name"],
+            total_documents=info["point_count"],
+            status=info["status"]
         )
     
     except Exception as e:
