@@ -95,7 +95,7 @@ async def search_documents(request: QueryRequest) -> dict:
         from app.core.vector_store import VectorStoreService
 
         vector_store = VectorStoreService()
-        results = vector_store.search_with_scores(request.question)
+        results = vector_store.search_with_score(request.question)
 
         documents = [
             {
