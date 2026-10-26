@@ -188,7 +188,7 @@ class RAGChain:
             logger.error(f"Error in query with evaluation: {e}")
             raise    
 
-    async def stream(self, question:str):
+    def stream(self, question:str):
         """Stram RAG Response
         
         Args:
@@ -201,7 +201,7 @@ class RAGChain:
         logger.debug(f"Streaming query: {question[:50]}..")
 
         try:
-            for chunk in self.chain.astream(question):
+            for chunk in self.chain.stream(question):
                 yield f"\n\n{chunk}"
 
         except Exception as e:
