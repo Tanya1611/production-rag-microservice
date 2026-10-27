@@ -5,7 +5,7 @@ import time
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
 
-from app.api.schemas import QueryRequest, QueryResponse, SourceDocument
+from app.api.schemas import QueryRequest, QueryResponse, SourceDocument, EvaluationScores
 from app.core.rag_chain import RAGChain
 from app.utils.logger import get_logger
 
@@ -23,7 +23,29 @@ async def query(request: QueryRequest) -> QueryResponse:
         rag_chain = RAGChain()
 
         # Determine which method to call based on request
-        if request.include_sources:
+        if request.enable_evaluation:
+            # Evaluation requires sources so including in it always
+            result = await rag_chain.query_with_evaluation(
+                question=request.question,
+                include_sources=request.include_sources,
+            )
+
+            sources = (
+                [
+                    SourceDocument(
+                        content=source["content"],
+                        metadata=source["metadata"],
+                    )
+                    for source in result["sources"]
+                ]
+                if request.include_sources
+                else None
+            )
+
+            answer = result["answer"]
+            evaluation = EvaluationScores(**result["evaluation"])
+
+        elif request.include_sources:
             result = await rag_chain.query_with_sources(request.question)
             sources = [
                 SourceDocument(
@@ -33,10 +55,12 @@ async def query(request: QueryRequest) -> QueryResponse:
                 for source in result["sources"]
             ]
             answer = result["answer"]
+            evaluation = None
 
         else:
             answer = await rag_chain.query(request.question)
             sources = None
+            evaluation = None
 
         processing_time = (time.time() - start_time) * 1000
 
@@ -46,7 +70,8 @@ async def query(request: QueryRequest) -> QueryResponse:
             question = request.question,
             answer = answer,
             sources = sources,
-            processing_time_ms = processing_time
+            processing_time_ms = processing_time,
+            evaluation=evaluation
         )
 
     except Exception as e:

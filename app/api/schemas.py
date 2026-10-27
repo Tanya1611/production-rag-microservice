@@ -6,7 +6,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
-#------------Health Schemas-----------------
+#---------------------------------------Health Schemas--------------------------------------------
 
 class HealthResponse(BaseModel):
     # Health Check Response
@@ -22,7 +22,7 @@ class ReadinessResponse(BaseModel):
     collection_info: dict = Field(description="Collection information")
 
 
-#------------Document Schemas-----------------------
+#---------------------------------------Document Schemas--------------------------------------------
 
 class DocumentUploadResponse(BaseModel):
     # Response after document upload.
@@ -48,20 +48,22 @@ class DocumentListResponse(BaseModel):
     total_documents: int = Field(description="Total document count")
     status: str = Field(description="Collection status")
 
-#-------------Query Schemas-----------------
+#------------------------------------------Query Schemas--------------------------------------------
 
 class QueryRequest(BaseModel):
     # Request for RAG query
 
     question : str = Field(min_length=1, max_length=1000)
     include_sources : bool = Field(description="Include source documents in response")
+    enable_evaluation: bool = Field(default=False, description="Enable RAGAS evaluation (faithfulness, answer relevancy)")
 
     model_config = {
         "json_schema_extra":{
             "examples": [
                 {
                     "question":"What is RAG?",
-                    "include_sources":True
+                    "include_sources":True,
+                    "enable_evaluation": False
                 }
             ]
         }
@@ -73,6 +75,32 @@ class SourceDocument(BaseModel):
     content : str = Field(description="Document content expected")
     metadata : dict[str, Any] = Field(description="Document metadata")
 
+
+class EvaluationScores(BaseModel):
+    # RAGAS evaluation scores
+
+    faithfulness: float | None = Field(
+        None,
+        description="Faithfulness score (0-1): measures factual consistency with sources",
+        ge=0.0,
+        le=1.0,
+    )
+    answer_relevancy: float | None = Field(
+        None,
+        description="Answer relevancy score (0-1): measures relevance to question",
+        ge=0.0,
+        le=1.0,
+    )
+    evaluation_time_ms: float | None = Field(
+        None,
+        description="Time taken for evaluation in milliseconds",
+    )
+    error: str | None = Field(
+        None,
+        description="Error message if evaluation failed",
+    )
+
+
 class QueryResponse(BaseModel):
     # Response for RAG Query
 
@@ -80,9 +108,10 @@ class QueryResponse(BaseModel):
     answer : str = Field(description="Generated answer")
     sources : list[SourceDocument] | None = Field(None, description="Source Document used")
     processing_time_ms : float = Field(description="Query processing time in milliseconds")
+    evaluation: EvaluationScores | None = Field(None, description="RAGAS evaluation scores (if requested)")
 
 
-#-------------Error Schemas-----------------
+#--------------------------------------------Error Schemas-------------------------------------
 
 class ErrorResponse(BaseModel):
     # Error Response
