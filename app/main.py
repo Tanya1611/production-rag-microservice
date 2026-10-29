@@ -1,5 +1,8 @@
 """FastAPI application entry point."""
 
+import sys 
+sys.modules['langchain_community.chat_models.vertexai'] = type('Mock', (), {'ChatVertexAI': object})
+
 from dotenv import load_dotenv
 
 load_dotenv()
