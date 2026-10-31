@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     ragas_log_results: bool = True
     ragas_llm_model: str | None = None 
     ragas_llm_temperature: str | None = None 
+    ragas_embedding_model: str | None = None
 
     # API Settings
     api_host: str = "0.0.0.0"
